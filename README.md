@@ -1,11 +1,11 @@
 # Claude Code Mnemosyne Plugin
 
-A native Claude Code Skill that connects Claude to the `mnemosyne` CLI, providing persistent project and cross-project
+A native Claude Code Skill that connects Claude to the [`mnemosyne` CLI](https://github.com/gandazgul/mnemosyne), providing persistent project and cross-project
 memory without using MCP or requiring background servers.
 
 ## Prerequisites
 
-You **must** have the `mnemosyne` CLI tool installed globally on your system.
+You **must** have the [`mnemosyne` CLI tool](https://github.com/gandazgul/mnemosyne) installed globally on your system.
 
 If you are building from the repository:
 
