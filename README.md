@@ -29,7 +29,21 @@ mnemosyne --version
 
 ## Installation
 
-You can install the skill automatically using the provided script:
+Recommended: install the skill globally for Claude Code with [`npx skills`](https://github.com/vercel-labs/skills):
+
+```bash
+npx skills@latest add https://github.com/gandazgul/claudecode-mnemosyne \
+  --skill mnemosyne \
+  --agent claude-code \
+  --global \
+  --yes
+```
+
+This installs the `mnemosyne` skill to `~/.claude/skills/mnemosyne`. Restart any active Claude Code sessions after installation.
+
+### Script Installation
+
+You can also install the skill using the provided script from a local clone:
 
 ```bash
 ./install.sh
@@ -37,7 +51,7 @@ You can install the skill automatically using the provided script:
 
 ### Manual Installation
 
-To manually make the memory skill available to Claude Code globally, simply copy the `skills/mnemosyne` directory to
+To manually make the memory skill available to Claude Code globally, copy the `skills/mnemosyne` directory to
 your Claude Code skills directory (`~/.claude/skills/`).
 
 ```bash
