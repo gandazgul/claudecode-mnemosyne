@@ -1,79 +1,119 @@
-# Claude Code Mnemosyne Plugin
+# Claude Code Mnemoteca Skill
 
-A native Claude Code Skill that connects Claude to the [`mnemosyne` CLI](https://github.com/gandazgul/mnemosyne), providing persistent project and cross-project
-memory without using MCP or requiring background servers.
+A native Claude Code Skill that connects Claude to the
+[`mnemoteca` CLI](https://github.com/gandazgul/mnemoteca). It provides
+persistent project and cross-project memory that stays local.
 
 ## Prerequisites
 
-You **must** have the [`mnemosyne` CLI tool](https://github.com/gandazgul/mnemosyne) installed globally on your system.
-
-If you are building from the repository:
+Install the `mnemoteca` CLI globally:
 
 ```bash
-git clone https://github.com/gandazgul/mnemosyne.git
-cd mnemosyne
-go install .
+curl -fsSL https://raw.githubusercontent.com/gandazgul/mnemoteca/main/install.sh | sh
+mnemoteca setup
 ```
 
-Alternatively, if `taskfile.dev` runner is installed:
+Windows users install the Mnemoteca release ZIP instead. See the
+[Mnemoteca README](https://github.com/gandazgul/mnemoteca#installation).
+
+Make sure the `mnemoteca` binary is accessible in your system `PATH`. Verify it
+with:
 
 ```bash
-task install
+mnemoteca version
 ```
 
-Make sure the `mnemosyne` binary is accessible in your system's `$PATH`. You can verify this by running:
+## Install with skills
+
+Install the skill from the repository:
 
 ```bash
-mnemosyne --version
+npx skills@latest add https://github.com/gandazgul/claudecode-mnemoteca \
+  --skill mnemoteca \
+  --target claude-code
 ```
 
-## Installation
+This installs the `mnemoteca` skill to `~/.claude/skills/mnemoteca`. Restart
+active Claude Code sessions after installation.
 
-Recommended: install the skill globally for Claude Code with [`npx skills`](https://github.com/vercel-labs/skills):
+## Manual installation
+
+You can also copy the skill directory yourself on macOS or Linux:
 
 ```bash
-npx skills@latest add https://github.com/gandazgul/claudecode-mnemosyne \
-  --skill mnemosyne \
-  --agent claude-code \
-  --global \
-  --yes
+mkdir -p ~/.claude/skills
+cp -r skills/mnemoteca ~/.claude/skills/
 ```
 
-This installs the `mnemosyne` skill to `~/.claude/skills/mnemosyne`. Restart any active Claude Code sessions after installation.
+On Windows PowerShell, copy the skill directory manually:
 
-### Script Installation
+```powershell
+$SkillRoot = "$env:USERPROFILE\.claude\skills"
+New-Item -ItemType Directory -Force $SkillRoot | Out-Null
+Copy-Item -Recurse -Force .\skills\mnemoteca "$SkillRoot\mnemoteca"
+```
 
-You can also install the skill using the provided script from a local clone:
+Or run the installer in this repository on macOS or Linux:
 
 ```bash
 ./install.sh
 ```
 
-### Manual Installation
+## Upgrade from claudecode-mnemosyne
 
-To manually make the memory skill available to Claude Code globally, copy the `skills/mnemosyne` directory to
-your Claude Code skills directory (`~/.claude/skills/`).
+If you already used the old Claude Code skill, stop active Claude Code sessions
+before you change skills.
 
-```bash
-mkdir -p ~/.claude/skills/
-cp -r skills/mnemosyne ~/.claude/skills/
-```
+1. Migrate CLI data first if needed. Use the
+   [Mnemoteca migration guide](https://github.com/gandazgul/mnemoteca/blob/main/docs/migrate-from-mnemosyne.md).
+2. Install the new `mnemoteca` skill with `npx skills@latest add` or by copying
+   `skills/mnemoteca` to `~/.claude/skills/mnemoteca`.
+3. Start Claude Code and verify that the `mnemoteca` skill is available. Store
+   and recall a harmless test memory if needed.
+4. After the new skill works, optionally inspect and remove the old skill
+   directory only if it is the old skill:
+   ```bash
+   ls -la ~/.claude/skills/mnemosyne
+   rm -rf ~/.claude/skills/mnemosyne
+   ```
+   On Windows PowerShell, inspect the path first, then remove it only if it is
+   the old skill:
+   ```powershell
+   Get-ChildItem "$env:USERPROFILE\.claude\skills\mnemosyne"
+   Remove-Item -Recurse -Force "$env:USERPROFILE\.claude\skills\mnemosyne"
+   ```
+5. Restart Claude Code.
 
-After installing, the next time you start a Claude Code session, it will automatically have access to the `mnemosyne`
-skill.
+The old and new skill directories can coexist during verification, but do not
+use both for normal work. The agent-facing `memory_*` capability names stay
+stable.
 
-## How It Works
+Windows users must complete the skill replacement before restarting Claude Code.
+There is no Windows `mnemosyne` compatibility shim, alias, copied executable, or
+renamed executable.
 
-This skill utilizes the native `SKILL.md` format. It sets `allowed-tools: Bash(mnemosyne)`, which automatically grants
-Claude Code permission to execute the `mnemosyne` CLI tool to store, recall, and delete memories for you, without
-intrusive confirmation prompts.
+## How it works
 
-## Memory System
+This skill uses the native `SKILL.md` format. It sets
+`allowed-tools: Bash(mnemoteca)`, which grants Claude Code permission to execute
+the `mnemoteca` CLI tool to store, recall, and delete memories.
 
-The installed skill tells Claude Code to follow this command-based memory workflow:
+## Commands taught to Claude
 
-- Use `mnemosyne search -f plain [query]` and `mnemosyne search -g -f plain [query]` to search relevant memories. Use this before making any decisions or taking any actions.
-- After significant decisions, use `mnemosyne add "memory content"` to save a concise fact you want to remember. Also do this if the user explicitly asks you to remember something. Use `mnemosyne add -g "memory content"` for cross-project preferences.
-- Delete contradicted memories with `mnemosyne delete [memory id]` after storing updated ones with `mnemosyne add ...` or `mnemosyne add -g ...`.
-- Mark critical, always-relevant context as core with `-t core`, but use it sparingly. You can also use other tags with repeated `-t` flags, such as `mnemosyne add "database is sqlite" -t core -t tech-stack`.
-- When you are done with a session, store any memories that you think are relevant to the user and the project. This will help you recall important information in future sessions.
+- Use `mnemoteca search -f plain [query]` and `mnemoteca search -g -f plain [query]` to search relevant memories.
+- After significant decisions, use `mnemoteca add "memory content"` to save a concise fact. Use `mnemoteca add -g "memory content"` for cross-project preferences.
+- Delete contradicted memories with `mnemoteca delete [memory id]` after storing updated memories.
+- Mark critical, always-relevant context as core with `-t core`. You can also use repeated tags, such as `mnemoteca add "database is sqlite" -t core -t tech-stack`.
+
+The skill calls the `mnemoteca` executable through `PATH`. It does not own data
+storage, select databases, or run migrations.
+
+## Memory tools
+
+The natural-language capability names stay stable across the rename:
+
+- `memory_recall`
+- `memory_recall_global`
+- `memory_store`
+- `memory_store_global`
+- `memory_delete`
